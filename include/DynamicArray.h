@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <stdexcept>
 
 class DynamicArray {
 private:
@@ -8,8 +9,8 @@ private:
     std::size_t size;       // Размер массива
 
     // Вспомогательные методы для проверок
-    bool isIndexValid(std::size_t index) const;
-    bool isValueValid(int value) const;
+    void checkIndex(std::size_t index) const;
+    void checkValue(int value) const;
 
 public:
     // === Задание 1 ===
