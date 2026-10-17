@@ -2,40 +2,39 @@
 
 #include <algorithm>
 #include <iostream>
+#include <new>
 
-// === Приватные вспомогательные методы ===
+// === Проверки на индекс и значение
 
-bool DynamicArray::isIndexValid(std::size_t index) const {
+void DynamicArray::checkIndex(std::size_t index) const {
     if (index >= size) {
-        std::cerr << "Error: index out of array bounds!\n";
-        return false;
+        throw std::out_of_range("Error: index out of array bounds!");
     }
-
-    return true;
 }
 
-bool DynamicArray::isValueValid(int value) const {
+void DynamicArray::checkValue(int value) const {
     if (value < -100 || value > 100) {
-        std::cerr << "Error: value must be in range [-100, 100]!\n";
-        return false;
+        throw std::invalid_argument("Error: value must be in range [-100, 100]!");
     }
-
-    return true;
 }
 
-// === Задание 1: конструктор, деструктор, print, set, get ===
-
+// === Задание 1: конструктор, деструктор, print, set, get
+//Конструктор
 DynamicArray::DynamicArray(std::size_t sz) : data(nullptr), size(sz) {
     if (size > 0) {
-        // new int[size]() выделяет память и инициализирует элементы нулями
-        data = new int[size]();
+        try {
+            //Выделение памяти
+            data = new int[size]();
+        } catch (const std::bad_alloc&) {
+            throw;
+        }
     }
 }
-
+//Деструктор
 DynamicArray::~DynamicArray() {
     delete[] data;
 }
-
+//Print
 void DynamicArray::print() const {
     std::cout << "[ ";
 
@@ -49,79 +48,90 @@ void DynamicArray::print() const {
 
     std::cout << " ]\n";
 }
-
+//Set
 void DynamicArray::set(std::size_t index, int value) {
-    if (!isIndexValid(index)) {
-        return;
-    }
-
-    if (!isValueValid(value)) {
-        return;
-    }
-
+    checkIndex(index);
+    checkValue(value);
+    
     data[index] = value;
 }
-
+//Get
 int DynamicArray::get(std::size_t index) const {
-    if (!isIndexValid(index)) {
-        return 0;
-    }
-
+    checkIndex(index);
+    
     return data[index];
 }
 
-// === Задание 2: конструктор копирования ===
+// === Задание 2: конструктор копирования
 
 DynamicArray::DynamicArray(const DynamicArray& other) : data(nullptr), size(other.size) {
     if (size > 0) {
-        data = new int[size];
-        std::copy(other.data, other.data + size, data);
+        try {
+            data = new int[size];
+            std::copy(other.data, other.data + size, data);
+        } catch (const std::bad_alloc&) {
+            throw;
+        }
     }
 }
 
-// === Задание 3: добавление значения в конец ===
+// === Задание 3: добавление значения в конец
 
 void DynamicArray::add(int value) {
-    if (!isValueValid(value)) {
-        return;
+    checkValue(value);
+    
+    try {
+        int* newData = new int[size + 1];
+        
+        if (size > 0) {
+            std::copy(data, data + size, newData);
+        }
+        
+        newData[size] = value;
+        
+        delete[] data;
+        data = newData;
+        ++size;
+    } catch (const std::bad_alloc&) {
+        throw;
     }
-
-    int* newData = new int[size + 1];
-
-    if (size > 0) {
-        std::copy(data, data + size, newData);
-    }
-
-    newData[size] = value;
-
-    delete[] data;
-    data = newData;
-    ++size;
 }
 
 // === Задание 4: сложение и вычитание массивов ===
-
+//Сложение
 void DynamicArray::add(const DynamicArray& other) {
     for (std::size_t i = 0; i < size; ++i) {
         int otherValue = 0;
-
+        
         if (i < other.size) {
             otherValue = other.data[i];
         }
-
-        data[i] += otherValue;
+        
+        // Проверяем результат операции на выход из диапазона
+        int result = data[i] + otherValue;
+        if (result < -100 || result > 100) {
+            throw std::invalid_argument("Error: result of addition is out of range [-100, 100]!");
+        }
+        
+        data[i] = result;
     }
 }
-
+//Вычитание
 void DynamicArray::subtract(const DynamicArray& other) {
     for (std::size_t i = 0; i < size; ++i) {
         int otherValue = 0;
-
+        
         if (i < other.size) {
             otherValue = other.data[i];
         }
-
-        data[i] -= otherValue;
+        
+        // Проверяем результат операции на выход из диапазона
+        int result = data[i] - otherValue;
+        if (result < -100 || result > 100) {
+            throw std::invalid_argument("Error: result of subtraction is out of range [-100, 100]!");
+        }
+        
+        data[i] = result;
     }
 }
 
