@@ -3,90 +3,69 @@
 #include <string>
 
 int main() {
-    std::cout << "=== Для чисел ===\n";
+    std::cout << "=== 1. Check operator[] ===\n";
+    DynamicArray<int> arr1(3);
+    arr1[0] = 10; // Вызывает Proxy::operator=, который внутри вызывает set() с проверкой
+    arr1[1] = 20;
+    arr1[2] = 30;
+    std::cout << "arr1: " << arr1 << "\n";
     
+    std::cout << "Reading through operator[]: arr1[1] = " << arr1[1] << "\n";
+
     try {
-        DynamicArray<int> arr1(3);
-        arr1.set(0, 10);
-        arr1.set(1, 20);
-        arr1.set(2, 30);
-        std::cout << "arr1: " << arr1 << "\n";
-
-        DynamicArray<int> arr2(3);
-        arr2.set(0, 1);
-        arr2.set(1, 2);
-        arr2.set(2, 3);
-        std::cout << "arr2: " << arr2 << "\n";
-
-        // Демонстрация distance для чисел
-        std::cout << "Distance between arr1 and arr2: " << arr1.distance(arr2) << "\n\n";
-
-        // Демонстрация проверки значения
-        std::cout << "Попытка установить значение 150 (вне диапазона):\n";
-        try {
-            arr1.set(0, 150);
-        } catch (const std::invalid_argument& e) {
-            std::cerr << "Перехвачено: " << e.what() << "\n";
-        }
-
-        // Демонстрация проверки индекса
-        std::cout << "Попытка получить элемент по индексу 10(его нету):\n";
-        try {
-            arr1.get(10);
-        } catch (const std::out_of_range& e) {
-            std::cerr << "Перехвачено: " << e.what() << "\n";
-        }
-
-    } catch (const std::exception& e) {
-        std::cerr << "Ошибка: " << e.what() << "\n";
+        std::cout << "Try write 150 in arr1[0] (out of range):\n";
+        arr1[0] = 150; // Должно выбросить исключение благодаря проверке в set()
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Recaptured: " << e.what() << "\n";
     }
 
-    std::cout << "\n=== 2. Для строк ===\n";
+    try {
+        std::cout << "Try request by index 10:\n";
+        arr1[10] = 5;
+    } catch (const std::out_of_range& e) {
+        std::cerr << "Recaptured: " << e.what() << "\n";
+    }
+
+    std::cout << "\n=== 2. Try operator== и operator!= ===\n";
+    DynamicArray<int> arr2(3);
+    arr2[0] = 10; arr2[1] = 20; arr2[2] = 30;
     
-    try {
-        DynamicArray<std::string> strArr1(2);
-        strArr1.set(0, "Hello");
-        strArr1.set(1, "World");
-        std::cout << "strArr1: " << strArr1 << "\n";
+    DynamicArray<int> arr3(2);
+    arr3[0] = 10; arr3[1] = 20;
 
-        DynamicArray<std::string> strArr2(2);
-        strArr2.set(0, "C++");
-        strArr2.set(1, "Templates");
-        std::cout << "strArr2: " << strArr2 << "\n";
+    std::cout << "arr1 == arr2: " << (arr1 == arr2 ? "true" : "false") << "\n";
+    std::cout << "arr1 != arr3: " << (arr1 != arr3 ? "true" : "false") << "\n";
 
-        // Сложение строк работает, и проверка диапазона не применяется (это же строки а не числа)
-        strArr1.add(strArr2);
-        std::cout << "strArr1 после сложения со strArr2: " << strArr1 << "\n";
+    std::cout << "\n=== 3. Try operator+= и operator-= ===\n";
+    DynamicArray<int> arr4(3);
+    arr4[0] = 10; arr4[1] = 20; arr4[2] = 30;
+    
+    DynamicArray<int> arr5(2);
+    arr5[0] = 5; arr5[1] = 5;
+    
+    arr4 += arr5; // arr4 станет [15, 25, 30] (недостающий элемент arr5 считается 0)
+    std::cout << "arr4 += arr5: " << arr4 << "\n";
+    
+    arr4 -= 5; // Вычитаем скаляр из всех элементов
+    std::cout << "arr4 -= 5: " << arr4 << "\n";
 
-        // Демонстрация distance для нечислового типа
-        std::cout << "Попытка вычислить distance для строк:\n";
-        try {
-            strArr1.distance(strArr2);
-        } catch (const std::bad_typeid&) {
-            std::cerr << "Перехвачено: std::bad_typeid (distance только для арифметических типов)\n";
-        }
-
-        // Демонстрация distance для разных размеров
-        std::cout << "Попытка вычислить distance для массивов разного размера:\n";
-        DynamicArray<int> smallArr(2);
-        DynamicArray<int> largeArr(3);
-        try {
-            smallArr.distance(largeArr);
-        } catch (const std::invalid_argument& e) {
-            std::cerr << "Перехвачено: " << e.what() << "\n";
-        }
-
-    } catch (const std::exception& e) {
-        std::cerr << "Ошибка: " << e.what() << "\n";
+    std::cout << "\n=== 4. Checking iterators (range-based for) ===\n";
+    DynamicArray<std::string> strArr(3);
+    strArr[0] = "Hello";
+    strArr[1] = "World";
+    strArr[2] = "C++";
+    
+    std::cout << "Elements strArr through range-based for (reading):\n";
+    for (const auto& x : strArr) {
+        std::cout << x << " ";
     }
+    std::cout << "\n";
 
-    std::cout << "\n=== Нехватка памяти ===\n";
-    try {
-        // Роняем прогу (около 400ГБ оперативы)
-        DynamicArray<int> hugeArr(100000000000000UL);
-    } catch (const std::bad_alloc& e) {
-        std::cerr << "Перехвачено: " << e.what() << "\n";
+    // Изменение элементов через неконстантный итератор (ссылка)
+    for (auto& x : strArr) {
+        x = x + "!";
     }
+    std::cout << "strArr after chenges: " << strArr << "\n";
 
     return 0;
 }
