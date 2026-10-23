@@ -1,4 +1,4 @@
-#include "DynamicArray.h"
+/*#include "DynamicArray.h"
 
 #include <algorithm>
 #include <iostream>
@@ -128,3 +128,4 @@ void DynamicArray::subtract(const DynamicArray& other) {
 std::size_t DynamicArray::getSize() const {
     return size;
 }
+    */
